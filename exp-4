@@ -1,0 +1,77 @@
+import heapq
+
+def dijkstra(graph, source):
+    """
+    Finds the single source shortest path from 'source' to all other vertices.
+    
+    :param graph: Adjacency list represented as a dict/list of lists of tuples (neighbor, weight)
+    :param source: Starting vertex
+    :return: (distances, parents) dictionaries
+    """
+    n = len(graph)
+    
+    # Distance table initialized to infinity
+    distances = {v: float('inf') for v in range(n)}
+    distances[source] = 0
+    
+    # Track parent nodes to reconstruct actual paths
+    parents = {v: None for v in range(n)}
+    
+    # Priority queue stores tuples of (distance, vertex)
+    # Priority is based on shortest distance
+    pq = [(0, source)]
+    
+    while pq:
+        current_dist, current_node = heapq.heappop(pq)
+        
+        # If we found a longer path than already recorded, skip
+        if current_dist > distances[current_node]:
+            continue
+            
+        # Explore neighbors
+        for neighbor, weight in graph[current_node]:
+            distance = current_dist + weight
+            
+            # If a shorter path to the neighbor is found
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                parents[neighbor] = current_node
+                heapq.heappush(pq, (distance, neighbor))
+                
+    return distances, parents
+
+
+def get_path(parents, target):
+    """Reconstructs the path from source to target using the parents dictionary."""
+    path = []
+    curr = target
+    while curr is not None:
+        path.append(curr)
+        curr = parents[curr]
+    return ' -> '.join(map(str, path[::-1]))
+
+
+# --- Example Graph Setup (6 Vertices: 0 to 5) ---
+# Adjacency list: graph[u] = [(v, weight), ...]
+graph = {
+    0: [(1, 4), (2, 2)],
+    1: [(2, 1), (3, 5)],
+    2: [(3, 8), (4, 10)],
+    3: [(4, 2), (5, 6)],
+    4: [(5, 3)],
+    5: []
+}
+
+source = 0
+distances, parents = dijkstra(graph, source)
+
+# --- Output Results ---
+print(f"Single Source Shortest Paths starting from Vertex {source}:\n")
+print(f"{'Destination':<12} | {'Shortest Distance':<18} | {'Path Taken':<20}")
+print("-" * 58)
+
+for node in range(len(graph)):
+    dist = distances[node]
+    dist_str = str(dist) if dist != float('inf') else "Unreachable"
+    path_str = get_path(parents, node) if dist != float('inf') else "No path"
+    print(f"{node:<12} | {dist_str:<18} | {path_str:<20}")

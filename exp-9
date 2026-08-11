@@ -1,0 +1,38 @@
+def bin_packing(items, capacity):
+    # Sort items in decreasing order
+    items.sort(reverse=True)
+
+    bins = []
+
+    for item in items:
+        placed = False
+
+        # Try to place the item in an existing bin
+        for i in range(len(bins)):
+            if sum(bins[i]) + item <= capacity:
+                bins[i].append(item)
+                placed = True
+                break
+
+        # If no bin can accommodate the item
+        if not placed:
+            bins.append([item])
+
+    return bins
+
+
+# Input
+items = [4, 8, 1, 4, 2, 1]
+capacity = 10
+
+# Solve
+bins = bin_packing(items, capacity)
+
+# Output
+print("Items:", items)
+print("Bin Capacity:", capacity)
+
+for i, b in enumerate(bins, 1):
+    print("Bin", i, ":", b, "Total =", sum(b))
+
+print("Minimum Approximate Bins Required:", len(bins))

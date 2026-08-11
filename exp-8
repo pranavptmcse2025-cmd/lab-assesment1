@@ -1,0 +1,77 @@
+import math
+
+def tsp_branch_and_bound(graph):
+    n = len(graph)
+    visited = [False] * n
+    visited[0] = True
+
+    best_cost = math.inf
+    best_path = []
+
+    def first_min(i):
+        values = [graph[i][j] for j in range(n)
+                  if j != i and graph[i][j] != 0]
+        return min(values)
+
+    def second_min(i):
+        values = sorted(graph[i][j] for j in range(n)
+                        if j != i and graph[i][j] != 0)
+        return values[1]
+
+    def calculate_bound(path):
+        bound = 0
+
+        for i in range(n):
+            if not visited[i]:
+                bound += first_min(i) + second_min(i)
+
+        # Include current path edges
+        for i in range(len(path) - 1):
+            bound += graph[path[i]][path[i + 1]]
+
+        return bound / 2
+
+    def branch(path, current_cost):
+        nonlocal best_cost, best_path
+
+        # All cities visited
+        if len(path) == n:
+            total_cost = current_cost + graph[path[-1]][path[0]]
+
+            if total_cost < best_cost:
+                best_cost = total_cost
+                best_path = path[:] + [path[0]]
+
+            return
+
+        for city in range(n):
+            if not visited[city]:
+                new_cost = current_cost + graph[path[-1]][city]
+
+                # Simple lower bound
+                if new_cost < best_cost:
+                    visited[city] = True
+                    path.append(city)
+
+                    branch(path, new_cost)
+
+                    path.pop()
+                    visited[city] = False
+
+    branch([0], 0)
+
+    return best_path, best_cost
+
+
+# Cost matrix
+graph = [
+    [0, 10, 15, 20],
+    [10, 0, 35, 25],
+    [15, 35, 0, 30],
+    [20, 25, 30, 0]
+]
+
+path, cost = tsp_branch_and_bound(graph)
+
+print("Optimal Path:", " -> ".join(map(str, path)))
+print("Minimum Cost:", cost)
